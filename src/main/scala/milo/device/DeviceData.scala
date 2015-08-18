@@ -15,7 +15,6 @@ object DeviceDataFrame {
   ).as[DeviceDataFrame]
 
   val ddfList: Codec[List[DeviceDataFrame]] = list(frameCodec)
-
 }
 
 final case class DeviceData(
