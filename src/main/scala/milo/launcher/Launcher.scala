@@ -7,7 +7,7 @@ import com.typesafe.config.ConfigFactory
 import milo.server.MiloTcpServer
 
 object Launcher {
-  implicit val universe = ActorSystem("MiloSystem")
+  implicit val universe = ActorSystem("MiloSystem", ConfigFactory.load("akka"))
 
   // Application configuration file, by default
   // should be 'application.conf'
