@@ -1,19 +1,20 @@
-package milo
+package milo.launcher
+
+import java.net.InetSocketAddress
 
 import akka.actor._
 import com.typesafe.config.ConfigFactory
-import java.net.InetSocketAddress
+import milo.server.MiloTcpServer
 
 object Launcher {
   implicit val universe = ActorSystem("MiloSystem")
 
   // Application configuration file, by default
   // should be 'application.conf'
-  val config = ConfigFactory.load()
+  val config = ConfigFactory.load().getConfig("milo.server")
 
   // Application entry point
   def main(args: Array[String]): Unit = {
-  
     val interface = config.getString("interface")
     val port      = config.getInt("port")
 
@@ -21,4 +22,5 @@ object Launcher {
 
     universe.actorOf(Props(classOf[MiloTcpServer], socket))
   }
+
 }

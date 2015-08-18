@@ -1,15 +1,17 @@
-package milo
+package milo.server
+
+import java.net.InetSocketAddress
 
 import akka.actor._
-import akka.io.{IO, Tcp}
 import akka.event.LoggingReceive
-import java.net.InetSocketAddress
+import akka.io.{IO, Tcp}
+
 import scala.concurrent.duration.Duration
 
 /**
  * Extremely basic implementation of Tcp server, that accepts incomming
  * connection requests, then creates a connection processor actor upon this connection.
- * No Ack/Nacks or any kind of backpressure handling at this moment.
+ * No Ack/Nacs or any kind of back-pressure handling at this moment.
  */
 final class MiloTcpServer(socket: InetSocketAddress) extends Actor {
   import context.system
@@ -18,7 +20,7 @@ final class MiloTcpServer(socket: InetSocketAddress) extends Actor {
   private[this] val log = system.log
 
   /**
-   * Regester self as a server, listenning for incomming Tcp connections.
+   * Register self as a server, listening for incomming Tcp connections.
    */
   IO(Tcp) ! Tcp.Bind(self, socket)
 

@@ -1,16 +1,14 @@
-package milo
+package milo.server
+
+import akka.actor._
+import akka.event._
+import akka.io.Tcp
+import akka.pattern.pipe
+import akka.util.ByteString
+import milo.device._
 
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
-
-import akka.actor._
-import akka.io.Tcp
-import akka.event._
-import akka.util.ByteString
-import akka.pattern.pipe
-
-import milo.decoder._, Decoders._
-import milo.device._
 
 trait DeviceConfiguration 
 
@@ -19,8 +17,7 @@ abstract class DeviceConfigurationLoader {
 }
 
 final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) extends Actor {
-  import context.system
-  import context.dispatcher
+  import context.{dispatcher, system}
 
   // Just a shorthand
   private[this] val log = system.log
@@ -58,7 +55,7 @@ final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) exte
    */
   private def dataProcessor(config: DeviceConfiguration): Receive = LoggingReceive {
     case Tcp.Received(data) =>
-      
+
   }
 
 }
