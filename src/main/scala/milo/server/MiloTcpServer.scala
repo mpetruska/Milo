@@ -11,7 +11,7 @@ import scala.concurrent.duration.Duration
 /**
  * Extremely basic implementation of Tcp server, that accepts incomming
  * connection requests, then creates a connection processor actor upon this connection.
- * No Ack/Nacs or any kind of back-pressure handling at this moment.
+ * TODO: fine grained tcp connection control, with back-pressure and fail-over
  */
 final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLogging {
   import context.system

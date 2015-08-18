@@ -1,52 +1,83 @@
 package milo.server
 
+import scala.collection.immutable.Queue
+
 import akka.actor._
 import akka.event._
 import akka.io.Tcp
-import akka.pattern.pipe
 import akka.util.ByteString
+
+import scodec._, bits._, codecs._, implicits._
+
 import milo.device._
 
-import scala.collection.immutable.Queue
-import scala.concurrent.Future
-
+/**
+ * Actual tcp connection processor. One connection processor per device connection.
+ */
 final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) extends Actor with ActorLogging {
   import context.{dispatcher, system}
 
-  // Internal actor commands
+  // Internal actor API
   private case class LoadConfig(deviceId: DeviceId)
 
+  // TODO: definitely request a better buffering scheme...
   private[this] val buffer = Queue.empty[ByteString]
 
-  override def receive: Receive = LoggingReceive {
-    case Tcp.Received(data) =>
-      Decoder[DeviceId].decode(data) match {
-        case Left((error, reason)) => log.error(error, reason)
-        case Right(deviceId @ DeviceId(uuid)) =>
-          log.info(s"New device connected: $uuid, loading device configuration...")
-          context.become(loadingConfig)
-          self ! LoadConfig(deviceId)
-      }
+  override def receive: Receive = deviceIdentification
+
+  //////// INTERNAL STATES ////////
+
+  /**
+   * Initial state of newly connection processor. By the protocol
+   * design the very first incomming message contains device meta
+   * information (i.e device UUID, etc... ?)
+   */
+  def deviceIdentification: Receive = {
+    LoggingReceive.withLabel("device identification") {
+      case Tcp.Received(data) =>
+        Decoder[DeviceId].decode(BitVector(data.asByteBuffer)) match {
+          case Attempt.Failure(err) => handleError(err.toString)
+          case Attempt.Successful(DecodeResult(id, rem)) =>
+            if (rem.nonEmpty) log.warning(s"DeviceID was successfully decoded, but there's unexpected remainder: $rem")
+            context.become(configurationLoading(id))
+            self ! LoadConfig(id)
+        }
+    }
   }
 
   /**
-   * To think:
-   *   1. Fail-over strategy (timeouts)
-   *   2. Proper buffer handling
+   * TODO :: Fail-over strategy (timeouts)
+   * TODO :: Proper buffer handling
    */
-  private def loadingConfig: Receive = LoggingReceive {
-    case Tcp.Received(data) => buffer :+ data
-    case LoadConfig(deviceId) => configLoader.load(deviceId) pipeTo self
-    case config: DeviceConfiguration => context.become(dataProcessor(config))
+  def configurationLoading(deviceId: DeviceId): Receive = {
+    LoggingReceive.withLabel("loading device configuration") {
+      case LoadConfig(id) => loadConfiguration(id)
+      case Tcp.Received(data) => bufferData(data)
+      case config: DeviceConfiguration =>
+        log.info(s"Configuration for device ${deviceId.id} loaded!")
+        context.become(dataProcessor(config))
+    }
   }
-  
+
   /**
-   * To think:
-   *   1. What is a Device configuration and how are we going to use it?
+   * NOTE :: What is a Device configuration and how are we going to use it?
    */
   private def dataProcessor(config: DeviceConfiguration): Receive = LoggingReceive {
     case Tcp.Received(data) =>
+      Decoder[DeviceData].decode(BitVector(data.asByteBuffer)) match {
+        case Attempt.Failure(err) => handleError(err.toString())
+        case Attempt.Successful(deviceData) => // send to kafka
+      }
+  }
 
+
+  private def loadConfiguration(deviceId: DeviceId): Unit = {}
+
+  private def bufferData(data: ByteString): Unit = {}
+
+  //// Internal stuff
+  private def handleError(reason: String) = {
+    log.error(reason)
   }
 
 }
