@@ -16,8 +16,8 @@ import scala.concurrent.duration.Duration
 final class MiloTcpServer(socket: InetSocketAddress) extends Actor {
   import context.system
 
-  // Just a simple shorthand
-  private[this] val log = system.log
+  private val log = system.log
+  private val connectionCounter = Iterator.from(0)
 
   /**
    * Register self as a server, listening for incomming Tcp connections.
@@ -41,8 +41,8 @@ final class MiloTcpServer(socket: InetSocketAddress) extends Actor {
   def connected(tcpManager: ActorRef): Receive = LoggingReceive {
     case Tcp.Connected(remoteAddr, localAddr) =>
       log.debug(s"New connection from $remoteAddr accepted, processing...")
-      // Todo: add connection name counter
-      system.actorOf(Props[TcpConnectionProcessor])
+      system.actorOf(Props[TcpConnectionProcessor], name = genName)
   }
 
+  private def genName = s"TcpConnectionProcessor_${connectionCounter.next()}"
 }
