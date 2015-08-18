@@ -9,6 +9,9 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % "2.3.12" % "test",
   "com.typesafe"       % "config"       % "1.3.0",
 
+  // Kafka integration
+  "com.softwaremill" %% "reactive-kafka" % "0.7.0",
+
   // Scodec
   "org.scodec" %% "scodec-bits" % "1.0.9",
   "org.scodec" %% "scodec-core" % "1.8.1",

@@ -40,7 +40,7 @@ final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLog
   def connected(tcpManager: ActorRef): Receive = LoggingReceive {
     case Tcp.Connected(remoteAddr, localAddr) =>
       log.debug(s"New connection from $remoteAddr accepted, processing...")
-      system.actorOf(Props[TcpConnectionProcessor], name = genName)
+      system.actorOf(Props[DeviceDataProcessor], name = genName)
   }
 
   private def genName = s"TcpConnectionProcessor_${connectionCounter.next()}"

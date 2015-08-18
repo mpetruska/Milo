@@ -14,7 +14,7 @@ import milo.device._
 /**
  * Actual tcp connection processor. One connection processor per device connection.
  */
-final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) extends Actor with ActorLogging {
+final class DeviceDataProcessor(configLoader: DeviceConfigurationLoader) extends Actor with ActorLogging {
   import context.{dispatcher, system}
 
   // Internal actor API
@@ -66,7 +66,8 @@ final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) exte
     case Tcp.Received(data) =>
       Decoder[DeviceData].decode(BitVector(data.asByteBuffer)) match {
         case Attempt.Failure(err) => handleError(err.toString())
-        case Attempt.Successful(deviceData) => // send to kafka
+        case Attempt.Successful(deviceData) =>
+          // Process deviceData and send to kafka
       }
   }
 
@@ -79,5 +80,19 @@ final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) exte
   private def handleError(reason: String) = {
     log.error(reason)
   }
+
+}
+
+object _kafka {
+  import com.softwaremill.react.kafka._
+  import _root_.kafka.serializer._
+
+  val kafka = new ReactiveKafka()
+  val subscriber = kafka.publish(ProducerProperties(
+    brokerList = "localhost:9092",
+    topic = "uppercaseStrings",
+    clientId = "groupName",
+    encoder = new DefaultEncoder()
+  ))
 
 }
