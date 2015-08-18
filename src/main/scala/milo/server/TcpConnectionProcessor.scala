@@ -10,12 +10,6 @@ import milo.device._
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
 
-trait DeviceConfiguration 
-
-abstract class DeviceConfigurationLoader {
-  def load(deviceId: DeviceId): Future[DeviceConfiguration]
-}
-
 final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) extends Actor {
   import context.{dispatcher, system}
 
