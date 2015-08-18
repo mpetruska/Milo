@@ -10,11 +10,8 @@ import milo.device._
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
 
-final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) extends Actor {
+final class TcpConnectionProcessor(configLoader: DeviceConfigurationLoader) extends Actor with ActorLogging {
   import context.{dispatcher, system}
-
-  // Just a shorthand
-  private[this] val log = system.log
 
   // Internal actor commands
   private case class LoadConfig(deviceId: DeviceId)

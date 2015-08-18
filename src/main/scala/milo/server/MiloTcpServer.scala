@@ -13,10 +13,9 @@ import scala.concurrent.duration.Duration
  * connection requests, then creates a connection processor actor upon this connection.
  * No Ack/Nacs or any kind of back-pressure handling at this moment.
  */
-final class MiloTcpServer(socket: InetSocketAddress) extends Actor {
+final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLogging {
   import context.system
 
-  private val log = system.log
   private val connectionCounter = Iterator.from(0)
 
   /**
