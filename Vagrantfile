@@ -1,6 +1,13 @@
 
 $nodes = 1
 
+$docker_images = [
+  "java:openjdk-8-jdk",
+  "wurstmeister/zookeeper",
+  "wurstmeister/kafka",
+  "redis"
+]
+
 Vagrant.configure("2") do |universe|
 
   ## Essential CoreOS box environment configuration
@@ -28,7 +35,10 @@ Vagrant.configure("2") do |universe|
       box.vm.network "forwarded_port", guest: 2375, host: 2375, auto_correct: true
       box.vm.network :private_network, ip: "192.168.99.100"
 
-      box.vm.provision "docker", images: ["java:openjdk-8-jdk", "spotify/kafka", "redis"]
+      box.vm.provision "docker", images: $docker_images do |d|
+        d.run "wurstmeister/zookeeper", demonize: true, args: "-p 2181:2181"
+        d.run "wurstmeister/kafka", demonize: true, args: "-p 9092:9092 -e KAFKA_ADVERTISED_HOST_NAME=192.168.99.100 -e KAFKA_CREATE_TOPICS='ingest:1:1'"
+      end
 
     end
   end
