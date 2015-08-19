@@ -1,0 +1,31 @@
+package device;
+
+option java_package = "milo.protocol";
+
+message DeviceIdPacket {
+    required string id = 1;
+}
+
+message DeviceDataPacket {
+    message DeviceMeasurement {
+        enum Type { TEMPERATURE = 1; MOISTURE = 2; }
+
+        // Identifies which field is filled in.
+        required Type type = 5;
+
+        // One of the following will be filled in.
+        optional Temperature temperature = 6;
+        optional Moisture moisture = 7;
+
+        message Temperature {
+            required double value = 8;
+        }
+
+        message Moisture {
+            required double value = 9;
+        }
+    }
+    required uint64 time = 2;
+    required uint32 seq = 3;
+    repeated DeviceMeasurement measurements = 4;
+}
