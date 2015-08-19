@@ -1,9 +1,11 @@
 package device;
 
+import "common.proto";
+
 option java_package = "milo.protocol";
 
 message DeviceIdPacket {
-    required string id = 1;
+    required UUID id = 1;
 }
 
 message DeviceDataPacket {

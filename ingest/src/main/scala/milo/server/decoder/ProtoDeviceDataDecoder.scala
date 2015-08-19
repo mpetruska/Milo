@@ -49,8 +49,9 @@ object ProtoDeviceDataDecoder extends DeviceDataDecoder {
    * @return decoded device id
    */
   def decodeDeviceId(data: ByteString): Try[DeviceId] = {
-    DeviceIdPacket.validate(data.toArray).flatMap{ deviceIdPacket =>
-      Try(UUID.fromString(deviceIdPacket.id)).map(DeviceId)
+    DeviceIdPacket.validate(data.toArray).map{ deviceIdPacket =>
+      val uuid = new UUID(deviceIdPacket.id.mostSignificantBits, deviceIdPacket.id.leastSignificantBits)
+      DeviceId(uuid)
     }
   }
 
