@@ -1,7 +1,3 @@
-import com.trueaccord.scalapb.{ScalaPbPlugin => PB}
-
-PB.protobufSettings
-
 libraryDependencies ++= Seq(
   // Typesage stack
   "com.typesafe.akka" %% "akka-actor"   % "2.3.12",
