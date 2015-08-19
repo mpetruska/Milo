@@ -8,14 +8,10 @@ message DeviceIdPacket {
 
 message DeviceDataPacket {
     message DeviceMeasurement {
-        enum Type { TEMPERATURE = 1; MOISTURE = 2; }
-
-        // Identifies which field is filled in.
-        required Type type = 5;
-
-        // One of the following will be filled in.
-        optional Temperature temperature = 6;
-        optional Moisture moisture = 7;
+        oneof measurement{
+            Temperature temperature = 6;
+            Moisture moisture = 7;
+        }
 
         message Temperature {
             required double value = 8;

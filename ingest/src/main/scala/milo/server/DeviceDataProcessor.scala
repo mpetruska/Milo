@@ -1,14 +1,13 @@
 package milo.server
 
+import milo.server.decoder.DeviceDataDecoder
+
 import scala.collection.immutable.Queue
 
 import akka.actor._
 import akka.event._
 import akka.io.Tcp
 import akka.util.ByteString
-
-import scodec.DecodeResult
-
 import milo.device._
 
 /**
@@ -37,11 +36,12 @@ final class DeviceDataProcessor(decoder: DeviceDataDecoder) extends Actor with A
   def deviceIdentification: Receive = {
     LoggingReceive.withLabel("device identification") {
       case Tcp.Received(data) =>
-        decoder.decodeDeviceId(data).fold(handleError, { case DecodeResult(id, rem) =>
-          if (rem.nonEmpty) log.warning(s"DeviceID was successfully decoded, but there's an unexpected remainder: $rem")
+        decoder.decodeDeviceId(data).map { id =>
           context.become(configurationLoading(id))
           self ! LoadConfig(id)
-        })        
+        }.recover{
+          case e => handleError(e.toString)
+        }
     }
   }
 
@@ -70,9 +70,11 @@ final class DeviceDataProcessor(decoder: DeviceDataDecoder) extends Actor with A
    */
   private def dataProcessor(config: DeviceConfiguration): Receive = LoggingReceive {
     case Tcp.Received(data) =>
-      decoder.decodeDeviceData(data).fold(handleError, { case DecodeResult(data, rem) =>
-        log.info(s"Data accepted: $data, rem: $rem")
-      })
+      decoder.decodeDeviceData(data).map{ data =>
+        log.info(s"Data accepted: $data")
+      }.recover{
+        case e => handleError(e.toString)
+      }
   }
 
 
