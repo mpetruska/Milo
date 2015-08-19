@@ -7,15 +7,17 @@ import akka.event._
 import akka.io.Tcp
 import akka.util.ByteString
 
-import scodec._, bits._, codecs._, implicits._
+import scodec.DecodeResult
 
 import milo.device._
 
 /**
  * Actual tcp connection processor. One connection processor per device connection.
  */
-final class DeviceDataProcessor(configLoader: DeviceConfigurationLoader) extends Actor with ActorLogging {
+final class DeviceDataProcessor(decoder: DeviceDataDecoder) extends Actor with ActorLogging { 
   import context.{dispatcher, system}
+
+  log.debug(s"${self.path.name} has started processing")
 
   // Internal actor API
   private case class LoadConfig(deviceId: DeviceId)
@@ -35,13 +37,11 @@ final class DeviceDataProcessor(configLoader: DeviceConfigurationLoader) extends
   def deviceIdentification: Receive = {
     LoggingReceive.withLabel("device identification") {
       case Tcp.Received(data) =>
-        Decoder[DeviceId].decode(BitVector(data.asByteBuffer)) match {
-          case Attempt.Failure(err) => handleError(err.toString)
-          case Attempt.Successful(DecodeResult(id, rem)) =>
-            if (rem.nonEmpty) log.warning(s"DeviceID was successfully decoded, but there's unexpected remainder: $rem")
-            context.become(configurationLoading(id))
-            self ! LoadConfig(id)
-        }
+        decoder.decodeDeviceId(data).fold(handleError, { case DecodeResult(id, rem) =>
+          if (rem.nonEmpty) log.warning(s"DeviceID was successfully decoded, but there's an unexpected remainder: $rem")
+          context.become(configurationLoading(id))
+          self ! LoadConfig(id)
+        })        
     }
   }
 
@@ -51,10 +51,16 @@ final class DeviceDataProcessor(configLoader: DeviceConfigurationLoader) extends
    */
   def configurationLoading(deviceId: DeviceId): Receive = {
     LoggingReceive.withLabel("loading device configuration") {
-      case LoadConfig(id) => loadConfiguration(id)
+      /**
+       * Any received device data during the configuration loading,
+       * should be properly buffered.
+       */
       case Tcp.Received(data) => bufferData(data)
+
+      case LoadConfig(id) => loadConfiguration(id)
+      
       case config: DeviceConfiguration =>
-        log.info(s"Configuration for device ${deviceId.id} loaded!")
+        log.info(s"Configuration for device ${deviceId.id} loaded, processing data...")
         context.become(dataProcessor(config))
     }
   }
@@ -64,15 +70,15 @@ final class DeviceDataProcessor(configLoader: DeviceConfigurationLoader) extends
    */
   private def dataProcessor(config: DeviceConfiguration): Receive = LoggingReceive {
     case Tcp.Received(data) =>
-      Decoder[DeviceData].decode(BitVector(data.asByteBuffer)) match {
-        case Attempt.Failure(err) => handleError(err.toString())
-        case Attempt.Successful(deviceData) =>
-          // Process deviceData and send to kafka
-      }
+      decoder.decodeDeviceData(data).fold(handleError, { case DecodeResult(data, rem) =>
+        log.info(s"Data accepted: $data, rem: $rem")
+      })
   }
 
 
-  private def loadConfiguration(deviceId: DeviceId): Unit = {}
+  private def loadConfiguration(deviceId: DeviceId): Unit = {
+    self ! (new DeviceConfiguration {})
+  }
 
   private def bufferData(data: ByteString): Unit = {}
 
@@ -80,19 +86,5 @@ final class DeviceDataProcessor(configLoader: DeviceConfigurationLoader) extends
   private def handleError(reason: String) = {
     log.error(reason)
   }
-
-}
-
-object _kafka {
-  import com.softwaremill.react.kafka._
-  import _root_.kafka.serializer._
-
-  val kafka = new ReactiveKafka()
-  val subscriber = kafka.publish(ProducerProperties(
-    brokerList = "localhost:9092",
-    topic = "uppercaseStrings",
-    clientId = "groupName",
-    encoder = new DefaultEncoder()
-  ))
 
 }

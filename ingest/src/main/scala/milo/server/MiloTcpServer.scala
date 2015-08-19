@@ -9,9 +9,11 @@ import akka.io.{IO, Tcp}
 import scala.concurrent.duration.Duration
 
 /**
- * Extremely basic implementation of Tcp server, that accepts incomming
- * connection requests, then creates a connection processor actor upon this connection.
- * TODO: fine grained tcp connection control, with back-pressure and fail-over
+ * Extremely basic implementation of Tcp server. For the time being, the only
+ * actor's logic is to register (bind) itself on the tcp manager level and
+ * start accepting tcp connections. Per each device connection, the server
+ * creates a data processor, which does the actuall processing.
+ * TODO: fine grained tcp connection control, with back-pressure and fail-over strategy
  */
 final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLogging {
   import context.system
@@ -21,6 +23,7 @@ final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLog
   /**
    * Register self as a server, listening for incomming Tcp connections.
    */
+  log.info(s"Registering server on socket: $socket")
   IO(Tcp) ! Tcp.Bind(self, socket)
 
   override def receive: Receive = LoggingReceive {
@@ -29,7 +32,7 @@ final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLog
      * signalling that this actor is ready to accept incomming tcp connections
      */
     case Tcp.Bound(localAddr) =>
-      log.debug(s"MiloTcpServer is ready to listen for incomming connections on $localAddr")
+      log.info(s"MiloTcpServer is ready to listen for incomming connections on $localAddr")
       context.setReceiveTimeout(Duration.Undefined)
       context.become(connected(sender()))
   }
@@ -40,7 +43,8 @@ final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLog
   def connected(tcpManager: ActorRef): Receive = LoggingReceive {
     case Tcp.Connected(remoteAddr, localAddr) =>
       log.debug(s"New connection from $remoteAddr accepted, processing...")
-      system.actorOf(Props[DeviceDataProcessor], name = genName)
+      val processor = system.actorOf(Props(classOf[DeviceDataProcessor], ScodecDecoder), name = genName)
+      sender() ! Tcp.Register(processor)
   }
 
   private def genName = s"TcpConnectionProcessor_${connectionCounter.next()}"
