@@ -28,7 +28,7 @@ Vagrant.configure("2") do |universe|
       box.vm.network "forwarded_port", guest: 2375, host: 2375, auto_correct: true
       box.vm.network :private_network, ip: "192.168.99.100"
 
-      box.vm.provision "docker", images: ["java:openjdk-8-jdk", "spotify/cassandra", "spotify/kafka"]
+      box.vm.provision "docker", images: ["java:openjdk-8-jdk", "spotify/kafka", "redis"]
 
     end
   end
