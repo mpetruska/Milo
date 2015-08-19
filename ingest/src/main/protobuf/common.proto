@@ -1,0 +1,4 @@
+message UUID {
+    required sint64 least_significant_bits = 1;
+    required sint64 most_significant_bits = 2;
+}

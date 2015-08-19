@@ -1,0 +1,9 @@
+.DS_Store
+*.swp
+*.lock
+.vagrant
+.idea
+target
+journal
+snapshots
+checkpoint

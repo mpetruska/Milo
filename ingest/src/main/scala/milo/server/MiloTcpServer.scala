@@ -5,6 +5,7 @@ import java.net.InetSocketAddress
 import akka.actor._
 import akka.event.LoggingReceive
 import akka.io.{IO, Tcp}
+import milo.server.decoder.ProtoDeviceDataDecoder
 
 import scala.concurrent.duration.Duration
 
@@ -43,7 +44,7 @@ final class MiloTcpServer(socket: InetSocketAddress) extends Actor with ActorLog
   def connected(tcpManager: ActorRef): Receive = LoggingReceive {
     case Tcp.Connected(remoteAddr, localAddr) =>
       log.debug(s"New connection from $remoteAddr accepted, processing...")
-      val processor = system.actorOf(Props(classOf[DeviceDataProcessor], ScodecDecoder), name = genName)
+      val processor = system.actorOf(Props(classOf[DeviceDataProcessor], ProtoDeviceDataDecoder), name = genName)
       sender() ! Tcp.Register(processor)
   }
 
