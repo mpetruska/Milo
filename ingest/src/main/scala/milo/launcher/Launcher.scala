@@ -7,16 +7,18 @@ import com.typesafe.config.ConfigFactory
 import milo.server.MiloTcpServer
 
 object Launcher {
-  implicit val universe = ActorSystem("MiloSystem", ConfigFactory.load("akka"))
-
   // Application configuration file, by default
   // should be 'application.conf'
-  val config = ConfigFactory.load().getConfig("milo.server")
+  val config = ConfigFactory.load()
+
+  implicit val universe = ActorSystem("MiloSystem", config)
+
+  val miloConfig = config.getConfig("milo.server")
 
   // Application entry point
   def main(args: Array[String]): Unit = {
-    val interface = config.getString("interface")
-    val port      = config.getInt("port")
+    val interface = miloConfig.getString("interface")
+    val port      = miloConfig.getInt("port")
 
     val socket = new InetSocketAddress(interface, port)
 
