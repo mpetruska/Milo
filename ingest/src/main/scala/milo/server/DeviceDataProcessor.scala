@@ -7,6 +7,7 @@ import milo.infrastructure.ReactiveKafkaConnection
 import milo.server.decoder.DeviceDataDecoder
 
 import scala.collection.immutable.Queue
+import scala.util.{Success, Failure}
 
 import akka.actor._
 import akka.event._
@@ -46,11 +47,11 @@ abstract class AbstractDeviceDataProcessor extends Actor with ActorLogging {
   def deviceIdentification: Receive = {
     LoggingReceive.withLabel("device identification") {
       case Tcp.Received(data) =>
-        decoder.decodeDeviceId(data).map { id =>
-          context.become(configurationLoading(id))
-          self ! LoadConfig(id)
-        }.recover{
-          case e => handleError(e.toString)
+        decoder.decodeDeviceId(data) match {
+          case Failure(er) => handleError(er.toString)
+          case Success(id) =>
+            context.become(configurationLoading(id))
+            self ! LoadConfig(id)
         }
     }
   }
@@ -80,11 +81,11 @@ abstract class AbstractDeviceDataProcessor extends Actor with ActorLogging {
    */
   private def dataProcessor(config: DeviceConfiguration): Receive = LoggingReceive {
     case Tcp.Received(data) =>
-      decoder.decodeDeviceData(data).map{ data =>
-        log.info(s"Data accepted: $data")
-        publish(data)
-      }.recover{
-        case e => handleError(e.toString)
+      decoder.decodeDeviceData(data) match {
+        case Failure(er) => handleError(er.toString)
+        case Success(data) =>
+          log.info(s"Data accepted: $data")
+          publish(data)
       }
   }
 
