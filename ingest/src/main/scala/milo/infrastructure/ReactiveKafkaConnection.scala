@@ -14,8 +14,7 @@ import kafka.serializer.{Decoder, Encoder}
  */
 class ReactiveKafkaConnectionImpl(config: Config) extends Extension {
 
-  def producerProperties[T](topic: String)(implicit encoder: Encoder[T],
-                                                          partitionizer: T => Option[Array[Byte]]) = {
+  def producerProperties[T](topic: String)(implicit encoder: Encoder[T], partitionizer: T => Option[Array[Byte]]) = {
     ProducerProperties(
       config.getString("kafka.broker.list"),
       topic,
@@ -24,8 +23,7 @@ class ReactiveKafkaConnectionImpl(config: Config) extends Extension {
       partitionizer)
   }
 
-  def producerFor[T](topic: String)(implicit encoder: Encoder[T],
-                                                partitionizer: T => Option[Array[Byte]] = (_: T) => None) =
+  def producerFor[T](topic: String)(implicit encoder: Encoder[T], partitionizer: T => Option[Array[Byte]] = (_: T) => None) =
     new KafkaProducer(producerProperties(topic))
 
   def consumerProperties[T](topic: String)(implicit decoder: Decoder[T]) =
@@ -45,7 +43,8 @@ class ReactiveKafkaConnectionImpl(config: Config) extends Extension {
  */
 object ReactiveKafkaConnectionProvider
   extends ExtensionId[ReactiveKafkaConnectionImpl]
-  with ExtensionIdProvider {
+     with ExtensionIdProvider {
+
   //The lookup method is required by ExtensionIdProvider,
   // so we return ourselves here, this allows us
   // to configure our extension to be loaded when
