@@ -60,10 +60,10 @@ Vagrant.configure("2") do |universe|
                   args: image[:args]
           end
         end
-      end ## provision docker end
+      end ## provision docker endb
 
-      if File.exist?(CLOUD_CONFIG_PATH)
-        config.vm.provision :file, :source => "#{CLOUD_CONFIG_PATH}", :destination => "/tmp/vagrantfile-user-data"
+      if File.exist?(COREOS_CONFIG)
+        config.vm.provision :file, :source => "#{COREOS_CONFIG}", :destination => "/tmp/vagrantfile-user-data"
         config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
       end
 
