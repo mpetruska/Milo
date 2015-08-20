@@ -113,11 +113,12 @@ class KafkaDeviceDataProcessor(val deviceDataDecoder: DeviceDataDecoder)
 
   implicit val kafkaEncoder = new StringEncoder()
 
-  lazy val producer: KafkaProducer[String] = producerFor(topic = "test")
+  // TODO :: Extract topic to config file
+  lazy val producer: KafkaProducer[String] = producerFor(topic = "processed")
 
   def decoder = deviceDataDecoder
 
   def publish(value: DeviceData): Unit = {
-    producer.send(value.toString) // TODO: Convert message to Kafka format
+    producer.send(value.toString) // TODO :: Convert message to Kafka format
   }
 }
