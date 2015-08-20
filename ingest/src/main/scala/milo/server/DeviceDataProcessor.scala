@@ -1,5 +1,9 @@
 package milo.server
 
+import akka.stream.actor.ActorPublisher
+import kafka.producer.KafkaProducer
+import kafka.serializer.StringEncoder
+import milo.infrastructure.ReactiveKafkaConnection
 import milo.server.decoder.DeviceDataDecoder
 
 import scala.collection.immutable.Queue
@@ -10,16 +14,22 @@ import akka.io.Tcp
 import akka.util.ByteString
 import milo.device._
 
+object AbstractDeviceDataProcessor{
+  // Internal actor API
+  private case class LoadConfig(deviceId: DeviceId)
+}
+
 /**
  * Actual tcp connection processor. One connection processor per device connection.
  */
-final class DeviceDataProcessor(decoder: DeviceDataDecoder) extends Actor with ActorLogging { 
-  import context.{dispatcher, system}
+abstract class AbstractDeviceDataProcessor extends Actor with ActorLogging {
+  import AbstractDeviceDataProcessor._
+
+  def decoder: DeviceDataDecoder
+
+  def publish(deviceData: DeviceData): Unit
 
   log.debug(s"${self.path.name} has started processing")
-
-  // Internal actor API
-  private case class LoadConfig(deviceId: DeviceId)
 
   // TODO: definitely request a better buffering scheme...
   private[this] val buffer = Queue.empty[ByteString]
@@ -72,6 +82,7 @@ final class DeviceDataProcessor(decoder: DeviceDataDecoder) extends Actor with A
     case Tcp.Received(data) =>
       decoder.decodeDeviceData(data).map{ data =>
         log.info(s"Data accepted: $data")
+        publish(data)
       }.recover{
         case e => handleError(e.toString)
       }
@@ -88,5 +99,24 @@ final class DeviceDataProcessor(decoder: DeviceDataDecoder) extends Actor with A
   private def handleError(reason: String) = {
     log.error(reason)
   }
+}
 
+/**
+ * Implementation of a data processor that uses kafka to publish device data
+ * @param deviceDataDecoder
+ */
+class KafkaDeviceDataProcessor(val deviceDataDecoder: DeviceDataDecoder)
+  extends AbstractDeviceDataProcessor
+  with ActorPublisher[String]
+  with ReactiveKafkaConnection{
+
+  implicit val kafkaEncoder = new StringEncoder()
+
+  lazy val producer: KafkaProducer[String] = producerFor(topic = "test")
+
+  def decoder = deviceDataDecoder
+
+  def publish(value: DeviceData): Unit = {
+    producer.send(value.toString) // TODO: Convert message to Kafka format
+  }
 }

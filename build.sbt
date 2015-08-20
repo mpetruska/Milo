@@ -8,4 +8,8 @@ commonSettings(
 )
 
 // Projects
-lazy val ingest = project.in(file("ingest"))
+lazy val common = project.in(file("common"))
+
+// Projects
+lazy val ingest = project.in(file("ingest")).dependsOn(common)
+
