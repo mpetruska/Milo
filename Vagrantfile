@@ -2,12 +2,12 @@
 $nodes = 1
 
 $docker_images = [
-  {
-    # Don't forget to change this property in
-    # project docker public settings
-    :image => "java:openjdk-8-jdk", 
-    :run  => false
-  },
+  # {
+  #   # Don't forget to change this property in
+  #   # project docker public settings
+  #   :image => "java:openjdk-8-jdk", 
+  #   :run  => false
+  # },
   {
     :image => "wurstmeister/zookeeper",
     :run => true,
@@ -28,7 +28,13 @@ $docker_images = [
              "-e KAFKA_CREATE_TOPICS='ingest:1:1' " \
              "-v /var/run/docker.sock:/var/run/docker.sock"
              
-  }  
+  },
+  {
+    :image => "ingest",
+    :run => true,
+    :args => "--name ingest " \
+             "-p 8080:8080 "
+  }
   # {
   #   :name => "jplock/zookeeper",
   #   :run  => true,
