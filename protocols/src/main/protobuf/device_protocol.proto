@@ -2,7 +2,7 @@ package device;
 
 import "common.proto";
 
-option java_package = "milo.protocol";
+option java_package = "milo.protocols.protobuf";
 
 message DeviceIdPacket {
     required UUID id = 1;

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.util.ByteString
 import milo.device.{Measurement, DeviceData, DeviceId}
-import milo.protocol.device_protocol.{DeviceDataPacket, DeviceIdPacket}
+import milo.protocols.protobuf.device_protocol.{DeviceDataPacket, DeviceIdPacket}
 
 import scala.util.Try
 
