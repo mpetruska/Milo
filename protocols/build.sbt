@@ -1,0 +1,1 @@
+com.trueaccord.scalapb.ScalaPbPlugin.protobufSettings
