@@ -3,7 +3,9 @@ $nodes = 1
 
 $docker_images = [
   {
-    :image => "java:openjdk-8-jdk",
+    # Don't forget to change this property in
+    # project docker public settings
+    :image => "java:openjdk-8-jdk", 
     :run  => false
   },
   {
