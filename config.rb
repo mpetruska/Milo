@@ -7,32 +7,32 @@ $docker_images = [
   #   :image => "java:openjdk-8-jdk", 
   #   :run  => false
   # },
-  # {
-  #   :image => "wurstmeister/zookeeper",
-  #   :run => true,
-  #   :args => "-p 2181:2181 " \
-  #            "-p 2888:2888 " \
-  #            "-p 3888:3888 " \
-  #            "--name zookeeper"
-  # },
-  # ,{
-  #   :image => "wurstmeister/kafka",
-  #   :run => true,
-  #   :args => "-p 9092:9092 " \
-  #            "--name kafka " \
-  #            "--link zookeeper " \
-  #            "-e KAFKA_ADVERTISED_HOST_NAME='localhost' " \
-  #            "-e KAFKA_BROKER_ID=1 " \
-  #            "-e KAFKA_ZOOKEEPER_CONNECT=zookeeper " \
-  #            "-e KAFKA_CREATE_TOPICS='ingest:1:1' " \
-  #            "-v /var/run/docker.sock:/var/run/docker.sock"
-  # }
   {
-    :image => "ingest:0.1.0",
+    :image => "wurstmeister/zookeeper",
     :run => true,
-    :args => "--name ingest " \
-             "-p 8080:8080 "
+    :args => "-p 2181:2181 " \
+             "-p 2888:2888 " \
+             "-p 3888:3888 " \
+             "--name zookeeper"
+  },
+  {
+    :image => "wurstmeister/kafka",
+    :run => true,
+    :args => "-p 9092:9092 " \
+             "--name kafka " \
+             "--link zookeeper " \
+             "-e KAFKA_ADVERTISED_HOST_NAME='localhost' " \
+             "-e KAFKA_BROKER_ID=1 " \
+             "-e KAFKA_ZOOKEEPER_CONNECT=zookeeper " \
+             "-e KAFKA_CREATE_TOPICS='ingest:1:1' " \
+             "-v /var/run/docker.sock:/var/run/docker.sock"
   }
+  # {
+  #   :image => "ingest:0.1.0",
+  #   :run => true,
+  #   :args => "--name ingest " \
+  #            "-p 8080:8080 "
+  # }
   # {
   #   :name => "jplock/zookeeper",
   #   :run  => true,
