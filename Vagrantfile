@@ -1,58 +1,27 @@
+# -*- mode: ruby -*- #
 
-$nodes = 1
+require 'fileutils'
 
-$docker_images = [
-  {
-    :image => "java:openjdk-8-jdk",
-    :run  => false
-  },
-  {
-    :image => "wurstmeister/zookeeper",
-    :run => true,
-    :args => "-p 2181:2181 " \
-             "-p 2888:2888 " \
-             "-p 3888:3888 " \
-             "--name zookeeper"
-  },
-  {
-    :image => "wurstmeister/kafka",
-    :run => true,
-    :args => "-p 9092:9092 " \
-             "--name kafka " \
-             "--link zookeeper " \
-             "-e KAFKA_ADVERTISED_HOST_NAME='192.168.99.100' " \
-             "-e KAFKA_BROKER_ID=1 " \
-             "-e KAFKA_ZOOKEEPER_CONNECT=zookeeper " \
-             "-e KAFKA_CREATE_TOPICS='ingest:1:1' " \
-             "-v /var/run/docker.sock:/var/run/docker.sock"
-             
-  }  
-  # {
-  #   :name => "jplock/zookeeper",
-  #   :run  => true,
-  #   :args => "-p 2181:2181 " \
-  #            "-p 2888:2888 " \
-  #            "-p 3888:3888 "
-  # },  
-  # {
-  #   :image => "spotify/kafka",
-  #   :run  => true,
-  #   :args => "-p 2181:2181 " \
-  #            "-p 9092:9092 " \
-  #            "-e ADVERTISED_HOST=192.168.99.100 " \
-  #            "-e ADVERTISED_PORT=9092 " \
-  #            "-e TOPICS='ingest' " \
-  #            "--name zkKafka"
-  # }
-  
-]
+Vagrant.require_version ">= 1.7.0"
+
+CONFIG        = File.join(File.dirname(__FILE__), "config.rb")
+COREOS_CONFIG = File.join(File.dirname(__FILE__), "coreos-config")
+
+## Default configuration
+## (Can be overriden in CONFIG)
+$nodes         = 1
+$docker_images = []
+
+if File.exist?(CONFIG)
+  require CONFIG
+end
 
 Vagrant.configure("2") do |universe|
 
   ## Essential CoreOS box environment configuration
-  universe.vm.box = "coreos-alpha"
+  universe.vm.box         = "coreos-alpha"
   universe.vm.box_version = ">= 744.0.0"
-  universe.vm.box_url = "http://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json"
+  universe.vm.box_url     = "http://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json"
 
   universe.vm.provider :virtualbox do |v|
     # On VirtualBox, we don't have guest additions or a functional vboxsf
@@ -76,6 +45,8 @@ Vagrant.configure("2") do |universe|
       ## Box network configuration ##
       box.vm.network :private_network, ip: "192.168.99.100"
 
+      ## TODO :: This should be fixed to avoid port collision and having access to all
+      ##         applications in all nodes (increment by node number, as an offset)
       box.vm.network "forwarded_port", guest: 2375, host: 2375, auto_correct: true ## Some docker shit
       box.vm.network "forwarded_port", guest: 2181, host: 2181, auto_correct: true ## ZooKeeper
       box.vm.network "forwarded_port", guest: 9092, host: 9092, auto_correct: true ## Kafka
@@ -89,9 +60,15 @@ Vagrant.configure("2") do |universe|
                   args: image[:args]
           end
         end
+      end ## provision docker endb
+
+      if File.exist?(COREOS_CONFIG)
+        config.vm.provision :file, :source => "#{COREOS_CONFIG}", :destination => "/tmp/vagrantfile-user-data"
+        config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
       end
 
-    end
-  end
+    end ## box configuration end
 
-end
+  end ## node configuration end
+
+end ## vagrant configuration end
