@@ -1,9 +1,11 @@
 enablePlugins(JavaAppPackaging, DockerPlugin)
 
-dockerBaseImage    := "java:openjdk-8-jdk"
+dockerBaseImage    := "java:openjdk-8-jre"
 dockerExposedPorts := Seq(8080)
+dockerRepository   := Some("4lex1v")
 
-dockerExposedVolumes in Docker := Seq("/var/run/docker.sock")
-
-packageName in Docker := packageName.value
-version in Docker := version.value
+inConfig(Docker)(Seq(
+  version              := version.value,
+  packageName          := packageName.value,
+  dockerExposedVolumes := Seq("/var/run/docker.sock")
+))
