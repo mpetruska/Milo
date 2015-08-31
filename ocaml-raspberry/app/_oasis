@@ -1,0 +1,24 @@
+OASISFormat: 0.4
+Name:        Raspberry-sample-app
+Version:     0.1
+Synopsis:    Sample Raspberry application.
+Authors:     Mark Petruska <markp@cakesolutions.net>
+License:     MIT
+Plugins:     META (0.4)
+
+Executable sampler
+  Path:           src
+  BuildTools:     ocamlbuild
+  MainIs:         main.ml
+  BuildDepends:   core, async, threads
+
+Executable sampler_test
+  Path:         test
+  BuildTools:   ocamlbuild
+  MainIs:       test.ml
+  BuildDepends: oUnit
+  Install:      false
+
+Test sampler
+  Command:   $sampler_test
+  TestTools: sampler_test
