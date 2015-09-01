@@ -13,17 +13,17 @@ final class DeviceDataProcessorSpec
 
   implicit val system = ActorSystem("Test")
 
-  "Per connection data processor" should {
-
-    "create a device data decoder when the device initiate the connection" in new Infrastructure {
-      val device    = DeviceEmulator(socket)
-      val commander = TestProbe()
-
-      commander.
-
-    }
-
-  }
+//  "Per connection data processor" should {
+//
+//    "create a device data decoder when the device initiate the connection" in new Infrastructure {
+//      val device    = DeviceEmulator(socket)
+//      val commander = TestProbe()
+//
+//      commander.
+//
+//    }
+//
+//  }
 
   class Infrastructure {
     val socket = new InetSocketAddress("localhost", 8080)

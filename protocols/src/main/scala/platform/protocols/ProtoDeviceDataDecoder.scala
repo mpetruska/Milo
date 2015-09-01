@@ -1,10 +1,11 @@
-package milo.server.decoder
+package platform.protocols
 
 import java.util.UUID
 
 import akka.util.ByteString
-import milo.device.{Measurement, DeviceData, DeviceId}
 import milo.protocols.protobuf.device_protocol.{DeviceDataPacket, DeviceIdPacket}
+import platform.decoder.DeviceDataDecoder
+import platform.device.{DeviceId, DeviceData, Measurement}
 
 import scala.util.Try
 
