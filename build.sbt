@@ -10,6 +10,7 @@ commonSettings(
 )
 
 // Projects
-lazy val protocols = project.in(file("protocols"))
-lazy val ingest    = project.in(file("ingest")).dependsOn(protocols)
+lazy val extensions   = project.in(file("extensions"))
+lazy val protocols    = project.in(file("protocols")).dependsOn(extensions)
+lazy val ingest       = project.in(file("ingest")).dependsOn(protocols)
 

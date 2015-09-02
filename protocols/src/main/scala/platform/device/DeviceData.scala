@@ -1,7 +1,3 @@
 package platform.device
 
-trait DeviceData{
-  def time: Long
-  def seq: Int
-  def measurements: Seq[Measurement]
-}
+case class DeviceData(time: Long, seq: Int, measurements: Seq[Measurement])

@@ -1,6 +1,7 @@
 package device;
 
 import "common.proto";
+import "units_of_measure.proto";
 
 option java_package = "milo.protocols.protobuf";
 
@@ -12,15 +13,17 @@ message DeviceDataPacket {
     message DeviceMeasurement {
         oneof measurement{
             Temperature temperature = 6;
-            Moisture moisture = 7;
+            Humidity humidity = 7;
         }
 
         message Temperature {
-            required double value = 8;
+            required double value = 1;
+            required ThermalUnit unit = 2;
         }
 
-        message Moisture {
-            required double value = 9;
+        message Humidity {
+            required double value = 1;
+            required RelativeHumidityUnit unit = 2;
         }
     }
     required uint64 time = 2;
