@@ -16,7 +16,7 @@ class ProtoBufSpecification extends Properties("ProtoBuf protocol")
     roundTripDeviceId(x) == Success(x)
   }
 
-  property("roundtrip DeviceId") = forAll { (x: DeviceData) =>
+  property("roundtrip DeviceData") = forAll { (x: DeviceData) =>
     roundTripDeviceData(x) == Success(x)
   }
 
