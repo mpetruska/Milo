@@ -3,8 +3,10 @@ package milo.server
 import akka.stream.actor.ActorPublisher
 import kafka.producer.KafkaProducer
 import kafka.serializer.StringEncoder
+
 import milo.infrastructure.ReactiveKafkaConnection
-import milo.server.decoder.DeviceDataDecoder
+import platform.decoder.DeviceDataDecoder
+import platform.device.{DeviceId, DeviceData, DeviceConfiguration}
 
 import scala.collection.immutable.Queue
 import scala.util.{Success, Failure}
@@ -13,7 +15,6 @@ import akka.actor._
 import akka.event._
 import akka.io.Tcp
 import akka.util.ByteString
-import milo.device._
 
 object AbstractDeviceDataProcessor{
   // Internal actor API

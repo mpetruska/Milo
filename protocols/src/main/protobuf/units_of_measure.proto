@@ -1,0 +1,11 @@
+package device;
+
+enum ThermalUnit {
+    Kelvin = 1;
+    Celsius = 2;
+    Fahrenheit = 3;
+}
+
+enum RelativeHumidityUnit {
+    Percent = 1;
+}

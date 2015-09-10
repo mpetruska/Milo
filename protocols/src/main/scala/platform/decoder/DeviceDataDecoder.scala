@@ -1,7 +1,7 @@
-package milo.server.decoder
+package platform.decoder
 
 import akka.util.ByteString
-import milo.device._
+import platform.device.{DeviceData, DeviceId}
 
 import scala.util.Try
 

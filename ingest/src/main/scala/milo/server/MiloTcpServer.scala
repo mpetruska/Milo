@@ -5,7 +5,7 @@ import java.net.InetSocketAddress
 import akka.actor._
 import akka.event.LoggingReceive
 import akka.io.{IO, Tcp}
-import milo.server.decoder.ProtoDeviceDataDecoder
+import platform.protocols.ProtoDeviceDataDecoder
 
 import scala.concurrent.duration.Duration
 

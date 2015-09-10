@@ -1,4 +1,4 @@
-package milo.device
+package platform.device
 
 trait DeviceConfiguration {
 

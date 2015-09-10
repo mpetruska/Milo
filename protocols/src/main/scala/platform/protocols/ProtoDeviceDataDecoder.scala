@@ -1,10 +1,15 @@
-package milo.server.decoder
+package platform.protocols
 
 import java.util.UUID
 
 import akka.util.ByteString
-import milo.device.{Measurement, DeviceData, DeviceId}
+import cats.Traverse
+import cats.std.list._
+import cats.extensions.std.tryCats._
 import milo.protocols.protobuf.device_protocol.{DeviceDataPacket, DeviceIdPacket}
+import platform.decoder.DeviceDataDecoder
+import platform.decoder.UnitsOfMeasure._
+import platform.device._
 
 import scala.util.Try
 
@@ -12,29 +17,14 @@ import scala.util.Try
  * Helper to convert google protobuf generated classes into domain specific classes
  */
 object ProtoUnwrappers {
-  case class ProtoDeviceData(time: Long, seq: Int, measurements: Seq[Measurement] = Nil) extends DeviceData
 
-  object ProtoDeviceData{
-    def tryFrom(ddp: DeviceDataPacket) = Try{
-      val measurements = ddp.measurements.map(ProtoMeasurement.from)
-      ProtoDeviceData(ddp.time, ddp.seq, measurements)
+  object ProtoDeviceData {
+    def tryFrom(ddp: DeviceDataPacket) = {
+      val measurements = ddp.measurements.map(_.measurement).map(toSquant).toList
+      Traverse[List].sequence(measurements).map(DeviceData(ddp.time, ddp.seq, _))
     }
   }
 
-  case class ProtoMoistureMeasurement(value: Double) extends Measurement
-
-  case class ProtoTemperatureMeasurement(value: Double) extends Measurement
-
-  object ProtoMeasurement{
-    def from(ddp: DeviceDataPacket.DeviceMeasurement) = ddp.measurement match {
-      case DeviceDataPacket.DeviceMeasurement.Measurement.Moisture(moisture) =>
-        ProtoMoistureMeasurement(moisture.value)
-      case DeviceDataPacket.DeviceMeasurement.Measurement.Temperature(temperature) =>
-        ProtoTemperatureMeasurement(temperature.value)
-      case DeviceDataPacket.DeviceMeasurement.Measurement.Empty =>
-        throw new IllegalArgumentException("DeviceDataPacket.DeviceMeasurement.Measurement is 'Empty'.")
-    }
-  }
 }
 
 /**
