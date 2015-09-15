@@ -22,10 +22,21 @@ $docker_images = [
              "-v /var/run/docker.sock:/var/run/docker.sock"
   },
   {
+    :image => "cassandra:2.2.1",
+    :run => true,
+    :args => "-p 7000:7000 " + # Cluster communication
+             "-p 7001:7001 " + # Cluster communication (with SSL)
+             "-p 9160:9160 " + # Thrift
+             "-p 9042:9042 " + # Native protocol
+             "-p 7199:7199 " + # JMX
+             "--name cassandra"
+  },
+  {
     :image => "4lex1v/ingest:0.0.1",
     :run => true,
     :args => "--name ingest " \
-             "-p 8080:8080 "
+             "-p 8080:8080 " \
+             "--link cassandra"
   }
   # {
   #   :image => "spotify/kafka",
