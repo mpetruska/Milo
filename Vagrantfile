@@ -50,6 +50,8 @@ Vagrant.configure("2") do |universe|
       box.vm.network "forwarded_port", guest: 2375, host: 2375, auto_correct: true ## Some docker shit
       box.vm.network "forwarded_port", guest: 2181, host: 2181, auto_correct: true ## ZooKeeper
       box.vm.network "forwarded_port", guest: 9092, host: 9092, auto_correct: true ## Kafka
+      box.vm.network "forwarded_port", guest: 9160, host: 9160, auto_correct: true ## Cassandra, Thrift
+      box.vm.network "forwarded_port", guest: 9042, host: 9042, auto_correct: true ## Cassandra, Native protocol
 
       box.vm.provision "docker" do |d|
         $docker_images.each do |image|
